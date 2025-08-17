@@ -151,7 +151,6 @@ jobs:
     #         - name: terraform plan
     #           run: terraform plan
     #           working-directory: ./Terraform
-    
     # deploy:
     #     runs-on: ubuntu-latest
     #     steps:
@@ -189,15 +188,15 @@ jobs:
 
             - name: terraform init
               run: terraform init 
-              working-directory: ./terraform
+              working-directory: ./infrastructure
 
             - name: terraform plan
               run: terraform plan
-              working-directory: ./terraform
+              working-directory: ./infrastructure
 
             - name: terraform apply
               run: terraform apply -auto-approve
-              working-directory: ./terraform
+              working-directory: ./infrastructure
 
     deploy:
         name: deploy to EKS cluster
@@ -235,4 +234,3 @@ jobs:
               run: |
                 kubectl get pods  
                 kubectl get svc
-                
