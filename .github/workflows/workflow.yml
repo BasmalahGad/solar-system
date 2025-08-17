@@ -48,3 +48,28 @@ jobs:
                 path: test-results.xml
 
 
+    code-coverage:
+        name: code coverage
+        needs: unit-testing
+        runs-on: ubuntu-latest
+        steps:
+            - name: checkout repo
+              uses: actions/checkout@v5
+
+            - name: setup nodejs version - 18
+              uses: actions/setup-node@v4.4.0
+              with:
+                node-version: 18
+
+            - name: install dep
+              run: npm install
+
+            - name: check code coverage
+              run: npm run coverage
+            
+            - name: archive coverage results
+              uses: actions/upload-artifact@v4.6.2
+              with:
+                name: code-coverage-result
+                path: coverage
+                retention-days: 5
