@@ -214,7 +214,7 @@ jobs:
                 aws-region: us-east-1
 
             - name: Update kubeconfig
-              run: aws eks --region us-east-1 update-kubeconfig --name solar-system-cluster
+              run: aws eks --region us-east-1 update-kubeconfig --name solar-system
 
             - name: trigger app deployment
               uses: statsig-io/kubectl-via-eksctl@main
@@ -222,7 +222,7 @@ jobs:
                 aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
                 aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                 aws_region: us-east-1
-                cluster: solar-system-cluster
+                cluster: solar-system
 
             - name: deploy to EKS
               run: |
