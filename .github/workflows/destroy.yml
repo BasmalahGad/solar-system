@@ -30,3 +30,4 @@ jobs:
             terraform init -reconfigure
             terraform destroy -auto-approve
             working-directory: ./infrastructure
+            
