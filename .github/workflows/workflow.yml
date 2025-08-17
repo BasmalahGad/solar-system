@@ -44,7 +44,7 @@ jobs:
               if: steps.nodejs-unit-testing-step.outcome == 'failure' || steps.nodejs-unit-testing-step.outcome == 'success'
               uses: actions/upload-artifact@v4.6.2
               with:
-                name: mocha-test-result-${{ matrix.os}}-${{matrix.nodejs_version}}
+                name: mocha-test-result-${{ matrix.os }}-${{matrix.nodejs_version}}
                 path: test-results.xml
 
 
@@ -102,7 +102,7 @@ jobs:
               uses: docker/build-push-action@v6
               with:
                 push: false
-                tags: ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
+                tags: ${{ vars.DOCKERHUB_USERNAME }}/solar-system:latest
 
             - name: test docker image
               run: |
@@ -112,7 +112,7 @@ jobs:
                -e MONGO_URI=$MONGO_URI \
                -e MONGO_USERNAME=$MONGO_USERNAME \
                -e MONGO_PASSWORD=$MONGO_PASSWORD \
-               ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
+               ${{ vars.DOCKERHUB_USERNAME }}/solar-system:latest
                export IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' solar-system-app)
                echo $IP
 
@@ -124,7 +124,7 @@ jobs:
               with:
                 push: true
                 tags: |
-                  ${{ vars.DOCKERHUB_USERNAME }}/solar-system:${{ github.sha }}
+                  ${{ vars.DOCKERHUB_USERNAME }}/solar-system:latest
                 #   ghcr.io/${{ github.repository_owner }}/solar-system:${{ github.sha }}
 
     # terraform:
@@ -167,47 +167,47 @@ jobs:
 
     
     terraform:
-        name: Terraform Deployment
-        runs-on: ubuntu-latest 
+        name: terraform deployment
         needs: docker
+        runs-on: ubuntu-latest 
         environment: production
         steps:
-            - name: Checkout code
+            - name: checkout config files
               uses: actions/checkout@v5
 
-            - name: Configure AWS Credentials
+            - name: configure AWS credentials
               uses: aws-actions/configure-aws-credentials@v4.3.1
               with:
                 aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
                 aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                 aws-region: us-east-1
 
-            - name: hashicorp - Setup Terraform
+            - name: hashicorp - setup terraform
               uses: hashicorp/setup-terraform@v3.1.2
               with:
                 terraform_version: "1.1.7"
 
-            - name: Terraform Init
+            - name: terraform init
               run: terraform init 
               working-directory: ./terraform
 
-            - name: Terraform Plan
+            - name: terraform plan
               run: terraform plan
               working-directory: ./terraform
 
-            - name: Terraform Apply
+            - name: terraform apply
               run: terraform apply -auto-approve
               working-directory: ./terraform
 
     deploy:
-        name: Deploy to EKS
+        name: deploy to EKS cluster
         needs: terraform
         runs-on: ubuntu-latest
         steps:
-            - name: Checkout code
+            - name: checkout config files
               uses: actions/checkout@v5
-            
-            - name: Configure AWS Credentials
+
+            - name: configure AWS credentials
               uses: aws-actions/configure-aws-credentials@v4.3.1
               with:
                 aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -217,17 +217,21 @@ jobs:
             - name: Update kubeconfig
               run: aws eks --region us-east-1 update-kubeconfig --name solar-system-cluster
 
-
-            - name: Trigger App Deployment
+            - name: trigger app deployment
               uses: statsig-io/kubectl-via-eksctl@main
               env:
                 aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
                 aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                 aws_region: us-east-1
-                cluster: stage-eks-cluster
+                cluster: solar-system-cluster
 
-            - name: Deploy to EKS
+            - name: deploy to EKS
               run: |
                 kubectl apply -f deployment.yaml
                 kubectl apply -f service.yaml
                 working-directory: ./kubernetes
+
+            - name: verify deployment
+              run: |
+                kubectl get pods  
+                kubectl get svc
