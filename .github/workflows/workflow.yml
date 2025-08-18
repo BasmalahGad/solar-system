@@ -214,7 +214,8 @@ jobs:
                 aws-region: us-east-1
 
             - name: Update kubeconfig
-              run: aws eks --region us-east-1 update-kubeconfig --name solar-system
+              run: | 
+                    aws eks --region us-east-1 update-kubeconfig --name solar-system
 
             - name: trigger app deployment
               uses: statsig-io/kubectl-via-eksctl@main
