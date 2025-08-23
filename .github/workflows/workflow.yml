@@ -126,44 +126,6 @@ jobs:
                 tags: |
                   ${{ vars.DOCKERHUB_USERNAME }}/solar-system:latest
                 #   ghcr.io/${{ github.repository_owner }}/solar-system:${{ github.sha }}
-
-    # terraform:
-    #     name: terraform deployment
-    #     needs: docker
-    #     runs-on: ubuntu-latest
-    #     environment: production
-    #     steps:
-    #         - name: checkout config files
-    #           uses: actions/checkout@v5
-
-    #         - name: configure aws 
-    #           uses: aws-actions/configure-aws-credentials@v4.3.1
-    #           with:
-    #             aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-    #             aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    #             aws-region: us-east-2
-            
-    #         - name: terraform init
-    #           run: terraform init
-    #           working-directory: ./Terraform
-
-
-    #         - name: terraform plan
-    #           run: terraform plan
-    #           working-directory: ./Terraform
-    # deploy:
-    #     runs-on: ubuntu-latest
-    #     steps:
-    #         - name: checkout config files
-    #           uses: actions/checkout@v5
-        
-    #         - name: configure aws 
-    #           uses: aws-actions/configure-aws-credentials@v4.3.1
-    #           with:
-    #             aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-    #             aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-    #             aws-region: us-east-2
-
     
     terraform:
         name: terraform deployment
