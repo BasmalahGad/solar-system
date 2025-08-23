@@ -1,12 +1,11 @@
-name: solar-system-destroy
+name: infrastructure destroy
+
 on:
   workflow_dispatch:
-  push:
-    branches:
-        - main
+  
 jobs:
     terraform:
-        name: terraform-deployment
+        name: terraform destroy
         runs-on: ubuntu-latest
         environment: production
         steps:

@@ -44,9 +44,3 @@ resource "aws_iam_role_policy_attachment" "service_policy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
   role       = aws_iam_role.cluster.name
 }
-
-provider "kubernetes" {
-  host                   = data.aws_eks_cluster.main.endpoint
-  token                  = data.aws_eks_cluster_auth.main.token
-  cluster_ca_certificate = base64decode(data.aws_eks_cluster.main.certificate_authority[0].data)
-}
