@@ -175,7 +175,7 @@ jobs:
             aws-region: us-east-1
 
         - name: update kubeconfig
-          run: aws eks --region us-east-1 update-kubeconfig --name solar-system
+          run: aws eks update-kubeconfig --region us-east-1 --name solar-system
 
         - name: verify kubectl authentication
           run: |
