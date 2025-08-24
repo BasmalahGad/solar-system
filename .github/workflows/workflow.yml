@@ -127,73 +127,70 @@ jobs:
                   ${{ vars.DOCKERHUB_USERNAME }}/solar-system:latest
                 #   ghcr.io/${{ github.repository_owner }}/solar-system:${{ github.sha }}
     
-    terraform:
-        name: terraform deployment
-        needs: docker
-        runs-on: ubuntu-latest 
-        environment: production
-        steps:
-            - name: checkout config files
-              uses: actions/checkout@v5
+    # terraform:
+    #     name: terraform deployment
+    #     needs: docker
+    #     runs-on: ubuntu-latest 
+    #     environment: production
+    #     steps:
+    #         - name: checkout config files
+    #           uses: actions/checkout@v5
 
-            - name: configure AWS credentials
-              uses: aws-actions/configure-aws-credentials@v4.3.1
-              with:
-                aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                aws-region: us-east-1
+    #         - name: configure AWS credentials
+    #           uses: aws-actions/configure-aws-credentials@v4.3.1
+    #           with:
+    #             aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    #             aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    #             aws-region: us-east-1
 
-            - name: hashicorp - setup terraform
-              uses: hashicorp/setup-terraform@v3.1.2
-              with:
-                terraform_version: "1.1.7"
+    #         - name: hashicorp - setup terraform
+    #           uses: hashicorp/setup-terraform@v3.1.2
+    #           with:
+    #             terraform_version: "1.1.7"
 
-            - name: terraform init
-              run: terraform init 
-              working-directory: ./infrastructure
+    #         - name: terraform init
+    #           run: terraform init 
+    #           working-directory: ./infrastructure
 
-            - name: terraform plan
-              run: terraform plan
-              working-directory: ./infrastructure
+    #         - name: terraform plan
+    #           run: terraform plan
+    #           working-directory: ./infrastructure
 
-            - name: terraform apply
-              run: terraform apply -auto-approve
-              working-directory: ./infrastructure
+    #         - name: terraform apply
+    #           run: terraform apply -auto-approve
+    #           working-directory: ./infrastructure
 
     deploy:
-        name: deploy to EKS cluster
-        needs: terraform
-        runs-on: ubuntu-latest
-        steps:
-            - name: checkout config files
-              uses: actions/checkout@v5
+      name: deploy to EKS cluster
+      runs-on: ubuntu-latest
+      steps:
+        - name: checkout config files
+          uses: actions/checkout@v5
 
-            - name: configure AWS credentials
-              uses: aws-actions/configure-aws-credentials@v4.3.1
-              with:
-                aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                aws-region: us-east-1
+        - name: configure AWS credentials
+          uses: aws-actions/configure-aws-credentials@v4.3.1
+          with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: us-east-1
 
-            - name: Update kubeconfig
-              run: | 
-                    aws eks --region us-east-1 update-kubeconfig --name solar-system
+        - name: update kubeconfig
+          run: aws eks --region us-east-1 update-kubeconfig --name solar-system
 
-            - name: trigger app deployment
-              uses: statsig-io/kubectl-via-eksctl@main
-              env:
-                aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                region: us-east-1
-                cluster: solar-system
+        - name: verify kubectl authentication
+          run: |
+            echo "Checking cluster authentication..."
+            kubectl get nodes
+            kubectl get svc
 
-            - name: deploy to EKS
-              run: |
-                kubectl apply -f deployment.yaml --validate=false
-                kubectl apply -f service.yaml --validate=false
-              working-directory: ./kubernetes
+        - name: deploy manifests
+          run: |
+            kubectl apply -f deployment.yaml --validate=false
+            kubectl apply -f service.yaml --validate=false
+          working-directory: ./kubernetes
 
-            - name: verify deployment
-              run: |
-                kubectl get pods  
-                kubectl get svc
+        - name: verify deployment
+          run: |
+            kubectl get pods
+            kubectl get svc
+
